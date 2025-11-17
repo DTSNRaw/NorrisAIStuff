@@ -1,0 +1,57 @@
+# FRAMEWORK_DECISION.md
+
+## Context
+Task: deploy a small web UI to expose the existing Datamon Answer Checker (currently a terminal app). Requirements prioritize speed-to-prototype, low front-end overhead, and a simple deployment path so authorized resources can validate answers via browser.
+
+I researched official documentation for **Flask** and **Streamlit** and focused on ease of use, deployment simplicity, and suitability for small tooling.
+
+Sources:
+- Flask official docs — Quickstart / Overview. :contentReference[oaicite:0]{index=0}
+- Streamlit docs — Get started / Concepts / Deploy guides. :contentReference[oaicite:1]{index=1}
+
+---
+
+## Key differences (3+ meaningful differences)
+
+1. **Programming model: request/response vs script-based reactive**
+   - **Flask**: traditional WSGI web framework. You write route handlers and templates, and Flask responds to HTTP requests. More control over routing, middleware, auth, and template rendering. Good when you need a custom backend API or complex request handling. :contentReference[oaicite:2]{index=2}
+   - **Streamlit**: script-driven; you write a Python script that describes UI; Streamlit runs the script top-to-bottom and reruns it on interactions. This is fast for prototypes and data apps; less control over low-level HTTP semantics. :contentReference[oaicite:3]{index=3}
+
+2. **Front-end work required**
+   - **Flask**: usually requires HTML/CSS/JS (templates) for a polished UI or a separate frontend (React/Vue). More boilerplate for UI, but more flexible for custom interactions. :contentReference[oaicite:4]{index=4}
+   - **Streamlit**: minimal/no front-end coding. UI widgets (text input, file uploader, buttons) are built-in, so you can get a usable interface in minutes. :contentReference[oaicite:5]{index=5}
+
+3. **Deployment & hosting options**
+   - **Flask**: deployable on any WSGI host (Gunicorn + Nginx, Heroku, Docker, AWS/GCP). Requires configuring web server and reverse proxy for production. Well-suited to long-lived backend services. :contentReference[oaicite:6]{index=6}
+   - **Streamlit**: local run via `streamlit run` or can be deployed to Streamlit Community Cloud (very fast) or containerized. Community Cloud makes sharing especially quick for prototypes. For production-grade auth or multi-user policies, extra work needed. :contentReference[oaicite:7]{index=7}
+
+4. **Extensibility & ecosystem**
+   - **Flask**: mature ecosystem of extensions (ORMs, auth, migrations). Better for building full-featured web apps and APIs. :contentReference[oaicite:8]{index=8}
+   - **Streamlit**: ecosystem focused on data apps, widgets, and fast iteration. It integrates well with ML/data tooling and has community components; not primarily intended for building complex multi-route web services. :contentReference[oaicite:9]{index=9}
+
+5. **Learning curve / speed**
+   - **Flask**: easy to start for basic apps, but polishing an interactive UI will require HTML/CSS/JS knowledge or templates—so higher time-to-polish for novices.
+   - **Streamlit**: extremely low time-to-prototype for UI-driven tools; you write Python and get an interactive UI with widgets.
+
+---
+
+## My choice
+
+**Chosen framework:** **Streamlit**
+
+**Why (connected to the use case):**
+- The mission is to **rapidly** expose an existing terminal answer-checker to a browser so “authorized resources” can validate answers. That requirement prioritizes **speed-to-prototype**, minimal front-end work, and an interface that non-devs can use.
+- Streamlit maps exactly to that need: minimal UI code, built-in widgets for text input and file upload, and an easy local run/deploy model (e.g., `streamlit run app.py` or Streamlit Cloud). This minimizes ceremony and lets you focus on integrating the existing Datamon checking logic. :contentReference[oaicite:10]{index=10}
+
+---
+
+## One anticipated challenge with Streamlit
+
+**Challenge:** Streamlit reruns the entire script on each user interaction (it follows a script rerun model). If the Datamon Answer Checker contains heavy initialization (e.g., loading large models or long setup steps), you must carefully structure and cache that work (using `st.cache_data` / `st.cache_resource`) or refactor initialization into a background service / small API to avoid slow interactions. Streamlit also has limited built-in multi-user auth; if you require strict enterprise authorization, you'll need to add an authentication layer (proxy auth, Cloud provider auth, or run behind an authenticated gateway). :contentReference[oaicite:11]{index=11}
+
+---
+
+## Tradeoffs & final notes
+- **Tradeoff:** Streamlit gives speed and simplicity at the expense of fine-grained control (routing, middleware, HTTP semantics) and built-in production-grade auth. If you later need a multi-route API or complex server-side workflows, you can extract the checking logic into a small Flask/FastAPI microservice and keep a Streamlit front-end, or port the whole app to Flask.
+- **Deliverable fit:** For this assignment (rapid prototype, demonstrations, and teaching “vibe coding”), Streamlit is the most efficient and defensible choice.
+
