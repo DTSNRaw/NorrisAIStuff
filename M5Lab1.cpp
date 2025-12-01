@@ -6,7 +6,7 @@ using namespace std;
 11/4/2025
 CSC 134
 M5LAB1 - Choose Your Own Adventure
-Damian Dotson
+
 */
 
 // Function Prototypes
