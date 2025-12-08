@@ -131,4 +131,4 @@ else:
     if st.session_state.page == "login":
         login_page()
     elif st.session_state.page == "register":
-        register_page()
+        register_page() 
